@@ -20,7 +20,8 @@
         "sskaje/mqtt": "dev-master",
         "tufanbarisyildirim/php-apk-parser": "dev-master",
         "docopt/docopt": "^1.0",
-        "twig/twig": "^1.0"
+        "twig/twig": "^1.0",
+        "rodneyrehm/plist": "dev-master"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "^2.9",

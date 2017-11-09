@@ -39,4 +39,26 @@ class PluginFlyvemdmConfig extends CommonTestCase {
       self::setupGLPIFramework();
       $this->boolean($this->login('glpi', 'glpi'))->isTrue();
    }
+
+   /**
+    * @engine inline
+    */
+   public function testConfigUpdate() {
+      $input = [
+         'applemdm_privkey_password' => '',
+      ];
+
+      // Test Apple MDM configuration process
+      $output = \PluginFlyvemdmConfig::configUpdate($input);
+      $this->array($output)->notHasKey('applemdm_privkey_password');
+      $this->array($_SESSION['MESSAGE_AFTER_REDIRECT'][1])
+      ->containsValues([
+         __('You must provide an email address', 'flyvemdm'),
+         __('You must provide a Country Code', 'flyvemdm'),
+         __('You must provide a Common Name', 'flyvemdm'),
+         __('You must provide a password for the private key', 'flyvemdm'),
+      ]);
+
+
+   }
 }

@@ -134,6 +134,275 @@ auth_opt_cacheseconds 300</textarea></p>
 				<p>service flyvemdm start</p>
 			</td>
 		</tr>
+		{% endif %} {% if step == 200 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2">
+				<p>{{ __('To handle Apple devices, you need a Apple Developer Enterprise Account or request a MDM customer certificate to an MDM vendor certified by Apple.', 'flyvemdm') }}</p>
+				<p>{{ __('Do you want to:', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr>
+			<th colspan="3" class="">{{ __('For vendors', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="new_enterprise_account"
+				name="apple_certificate" value="create enterprise account">
+				<label for="new_enterprise_account">{{
+				__('Create Apple Developer Enterprise Account', 'flyvemdm') }}</label></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="use_enterprise_account"
+				name="apple_certificate"
+				value="use enterprise account">
+				<label for="use_enterprise_account">{{
+				__('Request a vendor certificate using your Developer Enterprise Account', 'flyvemdm') }}</label></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="sign_customer_cert"
+				name="apple_certificate"
+				value="sign customer certificate">
+				<label for="sign_customer_cert">{{
+				__('Sign a customer certificate request', 'flyvemdm') }}</label></td>
+		</tr>
+		<tr>
+			<th colspan="3" class="">{{ __('For customers', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="create_customer_certificate"
+				name="apple_certificate"
+				value="create customer certificate">
+				<label for="create_customer_certificate">{{
+				__('Request a MDM customer certificate to a vendor', 'flyvemdm') }}</label></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="use_customer_cert"
+				name="apple_certificate"
+				value="use customer certificate">
+				<label for="use_customer_cert">{{
+				__('Use an existing MDM customer certificate', 'flyvemdm') }}</label></td>
+		</tr>
+		<tr>
+			<th colspan="3" class="">{{ __('Skip Apple devices management', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="skip_apple_mdm"
+				name="apple_certificate"
+				value="skip apple mdm">
+				<label for="skip_apple_mdm">{{
+				__('I don\'t want to manage Apple devices ', 'flyvemdm') }}</label></td>
+		</tr>
+		{% endif %} {% if step == 210 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td>
+				<p>{{ __('Open the link below to create your Apple Developer Enterprise Account.', 'flyvemdm') }}</p>
+				<p>{{ __('Important: enable the checkbox "My organization is a Mobile Device Management vendor"."', 'flyvemdm') }}</p>
+				<p>{{ __('You will receive a phone call from Apple for approval. Therefore you may need to wait several days before the account creation completes.', 'flyvemdm') }}</p>
+				<p>{{ __('You may need to come back to this wizard later, and continue by using an existing Developer Enterprise Account.', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><a href="{{ appleEnterpriseDeveloperUrl }}" target="_blank">{{ appleEnterpriseDeveloperUrl }}</a></td>
+		</tr>
+		{% endif %} {% if step == 220 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management',
+				'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td>
+				<p>{{ __('Do you want to:', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="generate_csr"
+				name="generate_csr" value="generate csr">
+				<label for="generate_csr">{{
+				__('Generate a key pair and a CSR with the wizard', 'flyvemdm') }}</label></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="manually_generate_csr"
+				name="generate_csr" value="manually generate csr">
+				<label for="manually_generate_csr">{{
+				__('use OpenSSL CLI to generate the key pair and the CSR', 'flyvemdm') }}</label></td>
+		</tr>
+		{% endif %} {% if step == 221 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} -
+			{{ __('Generate vendor certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td>
+				<p>{{ __('Do you want to:', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		</tr>
+		{% include 'config-wizard/applemdm-create-csr.html' %}
+		{% endif %} {% if step == 222 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} - {{ __('Generate vendor certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td>
+				<p>{{ __('Your keys and certificate signing request are ready.', 'flyvemdm') }}</p>
+				<p>{{ __('Please, upload your CSR to your Apple Developer Enterprise Account.', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><a href="{{ appleEnterpriseDeveloperUrl }}" target="_blank">{{ appleEnterpriseDeveloperUrl }}</a></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2"><textarea rows="10" cols="70" name="priv_key" disabled>{{ priv_key }}</textarea></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2"><textarea rows="10" cols="70" name="pub_key" disabled>{{ pub_key }}</textarea></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2"><textarea rows="10" cols="70" name="csr" disabled>{{ csr }}</textarea></td>
+		</tr>
+		{% endif %} {% if step == 223 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} -
+			{{ __('Generate vendor certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td>
+				<p>{{ __('- Generate a key pair.', 'flyvemdm') }}</p>
+				<p>{{ __('openssl genrsa -des3 -out vendor-privkey.pem 4096', 'flyvemdm') }}</p>
+				<p>{{ __('- Extract the public key.', 'flyvemdm') }}</p>
+				<p>{{ __('openssl rsa -pubout -in vendor-privkey.pem -out vendor-pubkey.pem', 'flyvemdm') }}</p>
+				<p>{{ __('- Generate the certificate signing request.', 'flyvemdm') }}</p>
+				<p>{{ __('openssl req -new -sha512 -key vendor-privkey.pem -out vendor-csr.csr', 'flyvemdm') }}</p>
+				<p>{{ __('- Keep in a safe place the keys and the passphrase.', 'flyvemdm') }}</p>
+				<p>{{ __('- Upload your CSR to your Apple Developer Enterprise Account.', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		{% endif %} {% if step == 230 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} -
+			{{ __('Generate customer certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td>
+				<p>{{ __('Do you want to:', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="generate_csr"
+				name="generate_csr" value="generate csr">
+				<label for="generate_csr">{{
+				__('Generate a key pair and a CSR with the wizard', 'flyvemdm') }}</label></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="manually_generate_csr"
+				name="generate_csr" value="manually generate csr">
+				<label for="manually_generate_csr">{{
+				__('use OpenSSL CLI to generate the key pair and the CSR', 'flyvemdm') }}</label></td>
+		</tr>
+		{% endif %} {% if step == 231 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} -
+			{{ __('Generate customer certificate', 'flyvemdm') }}</th>
+		</tr>
+		{% include 'config-wizard/applemdm-create-csr.html' %}
+		{% endif %} {% if step == 232 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} - {{ __('Generate customer certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2">
+				<p>{{ __('Your keys and certificate signing request are ready.', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2"><textarea rows="10" cols="70" name="priv_key" disabled>{{ priv_key }}</textarea></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2"><textarea rows="10" cols="70" name="pub_key" disabled>{{ pub_key }}</textarea></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2"><textarea rows="10" cols="70" name="csr" disabled>{{ csr }}</textarea></td>
+		</tr>
+		{% endif %} {% if step == 233 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} - {{ __('Generate customer certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr class="tab_bg_1">
+			<td>
+				<p>{{ __('- Generate a key pair.', 'flyvemdm') }}</p>
+				<p>{{ __('openssl genrsa -des3 -out customer-privkey.pem 4096', 'flyvemdm') }}</p>
+				<p>{{ __('- Extract the public key.', 'flyvemdm') }}</p>
+				<p>{{ __('openssl rsa -pubout -in customer-privkey.pem -out customer-pubkey.pem', 'flyvemdm') }}</p>
+				<p>{{ __('- Generate the certificate signing request.', 'flyvemdm') }}</p>
+				<p>{{ __('openssl req -new -key customer-privkey.pem -out customer-csr.csr', 'flyvemdm') }}</p>
+				<p>{{ __('- Keep in a safe place the keys and the passphrase.', 'flyvemdm') }}</p>
+				<p>{{ __('- Request a certificate from your CSR to your MDM vendor.', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		{% endif %} {% if step == 240 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} - {{ __('Sign customer certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr>
+			<td>
+				<p>{{ __('These steps will help you to sign a customer certificate signing request with your vendor certificate.', 'flyvemdm') }}</p>
+				<p>{{ __('Do you want to:', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="sign_with_wizard"
+				name="customer_siging" value="sign csr">
+				<label for="sign_with_wizard">{{
+				__('Sign a customer CSR with the wizard', 'flyvemdm') }}</label></td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td><input type="radio" id="sign_with_openssl"
+				name="customer_siging" value="manually sign csr">
+				<label for="sign_with_openssl">{{
+				__('Sign a customer CSR with OpenSSL', 'flyvemdm') }}</label></td>
+		</tr>
+		{% endif %} {% if step == 241 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} - {{ __('Sign customer certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<p>{{ __('Please, give the passphrase of the vendor private key to sign the customer CSR:', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr class="tab_bg_1">
+		   <td>{{ __('Private key passphrase', 'flyvemdm') }}</td>
+		   <td><input type="password" name="vendor_privkey_passphrase" value=""></td>
+		   <td>{{ __('Private key passphrase', 'flyvemdm') }}</td>
+		</tr>
+		{% endif %} {% if step == 242 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} - {{ __('Sign customer certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<p>{{ __('Your customer certificate is ready.', 'flyvemdm') }}</p>
+				<p>{{ __('Please, save your CSR to your Apple Developer Enterprise Account.', 'flyvemdm') }}</p>
+			</td>
+		</tr>
+		<tr class="tab_bg_1">
+			<td colspan="2"><textarea rows="10" cols="70" name="customer_crt" disabled>{{ customer_crt }}</textarea></td>
+		</tr>
+		{% endif %} {% if step == 243 %}
+		<tr>
+			<th colspan="3" class="">{{ __('Apple device management', 'flyvemdm') }} - {{ __('Sign customer certificate', 'flyvemdm') }}</th>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<p>{{ __('- Sign the customer certificate with your vendor certificate', 'flyvemdm') }}</p>
+				<p>{{ __('openssl sha1 -sign vendor-privkey.pem < ', 'flyvemdm') }}</p>
+			</td>
+		</tr>
 		{% endif %}
 		<tr class="tab_bg_1">
 			<td class="center" colspan="2">

@@ -140,4 +140,18 @@ class PluginFlyvemdmCommon
       }
       return rmdir($dir);
    }
+
+   /**
+    * Creates a file with chmod 400
+    *
+    * @param string $path path to the file to be created
+    * @param string $content content to save in the file
+    * @return integer|false number of bytes written or false on error
+    *
+    */
+   public static function createPrivateFile($path, $content) {
+      touch($path);
+      chmod($path, 400);
+      return file_put_contents($path, $content);
+   }
 }

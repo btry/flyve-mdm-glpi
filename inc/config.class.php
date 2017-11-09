@@ -60,6 +60,30 @@ class PluginFlyvemdmConfig extends CommonDBTM {
    const WIZARD_MQTT_BEGIN = 100;
    const WIZARD_MQTT_END = 105;
 
+   // first and last steps of the MQTT pages of wizard
+   const WIZARD_APPLEMDM_BEGIN = 200;
+   const WIZARD_APPLEMDM_END = 299;
+
+   // To create a Apple Developer Enterprise account
+   const WIZARD_APPLEMDM_CREATE_ADEA_BEGIN = 210;
+   const WIZARD_APPLEMDM_CREATE_ADEA_END = 210;
+
+   // To create a vendor CSR and get a vendor certificate from Apple
+   const WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN = 220;
+   const WIZARD_APPLEMDM_CREATE_VENDOR_CSR_END = 223;
+
+   // To create a customer CSR and get a certificate from a vendor
+   const WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN = 230;
+   const WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_END = 233;
+
+   // To sign a customer CST witha vendor certificate
+   const WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN = 240;
+   const WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_END = 243;
+
+   // To install a customer certificate
+   const WIZARD_APPLEMDM_USE_CUSTOMER_CRT_BEGIN = 250;
+   const WIZARD_APPLEMDM_USE_CUSTOMER_CRT_END = 250;
+
    const WIZARD_FINISH = -1;
    static $config = [];
 
@@ -137,7 +161,8 @@ class PluginFlyvemdmConfig extends CommonDBTM {
             }
             $tabs[2] = __('General configuration', 'flyvemdm');
             $tabs[3] = __('Message queue', 'flyvemdm');
-            $tabs[4] = __('Debug', 'flyvemdm');
+            $tabs[4] = __('Apple devices', 'flyvemdm');
+            $tabs[5] = __('Debug', 'flyvemdm');
             return $tabs;
             break;
       }
@@ -166,6 +191,10 @@ class PluginFlyvemdmConfig extends CommonDBTM {
                break;
 
             case 4:
+               $item->showFormAppleMdm();
+               break;
+
+            case 5:
                $item->showFormDebug();
                break;
          }
@@ -276,6 +305,24 @@ class PluginFlyvemdmConfig extends CommonDBTM {
       Html::closeForm();
    }
 
+   public function showFormAppleMdm() {
+      $canedit = PluginFlyvemdmConfig::canUpdate();
+      if ($canedit) {
+         echo '<form name="form" id="pluginFlyvemdm-config" method="post" action="' . Toolbox::getItemTypeFormURL(__CLASS__) . '">';
+      }
+
+      $fields = Config::getConfigurationValues('flyvemdm');
+
+      $data = [
+         'config' => $fields
+      ];
+      $twig = plugin_flyvemdm_getTemplateEngine();
+      echo $twig->render('config-applemdm.html', $data);
+
+      Html::closeForm();
+
+   }
+
    /**
     * Displays the message queue configuration form for the plugin.
     */
@@ -332,14 +379,49 @@ class PluginFlyvemdmConfig extends CommonDBTM {
          $data = [];
          $paragraph = 1;
          switch ($_SESSION['plugin_flyvemdm_wizard_step']) {
-            default:
-               // Nothing here for now
+            case static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN + 2:
+               $data['priv_key'] = file_get_contents(FLYVEMDM_CONFIG_PATH . '/applemdm/vendor/vendor_privkey.pem');
+               if ($data['priv_key'] === false) {
+                  $data['priv_key'] = '';
+               }
+               $data['pub_key'] = file_get_contents(FLYVEMDM_CONFIG_PATH . '/applemdm/vendor/vendor_pubkey.pem');
+               if ($data['pub_key'] === false) {
+                  $data['pub_key'] = '';
+               }
+               $data['csr'] = file_get_contents(FLYVEMDM_CONFIG_PATH . '/applemdm/vendor/vendor_request.csr');
+               if ($data['csr'] === false) {
+                  $data['csr'] = '';
+               }
+               break;
+
+            case static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN + 2:
+               $data['priv_key'] = file_get_contents(FLYVEMDM_CONFIG_PATH . '/applemdm/customer/customer_privkey.pem');
+               if ($data['priv_key'] === false) {
+                  $data['priv_key'] = '';
+               }
+               $data['pub_key'] = file_get_contents(FLYVEMDM_CONFIG_PATH . '/applemdm/customer/customer_pubkey.pem');
+               if ($data['pub_key'] === false) {
+                  $data['pub_key'] = '';
+               }
+               $data['csr'] = file_get_contents(FLYVEMDM_CONFIG_PATH . '/applemdm/customer/customer_request.csr');
+               if ($data['csr'] === false) {
+                  $data['csr'] = '';
+               }
+               break;
+
+            case static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN + 2:
+               $data['customer_crt'] = file_get_contents(FLYVEMDM_CONFIG_PATH . '/applemdm/customer/cert.crt');
+               if ($data['customer_crt'] === false) {
+                  $data['customer_crt'] = '';
+               }
+               break;
          }
 
          $data = $data + [
             'texts'  => $texts,
             'update' => $_SESSION['plugin_flyvemdm_wizard_step'] === static::WIZARD_FINISH ? __('Finish', 'flyvemdm') : __('Next', 'flyvemdm'),
             'step' => $_SESSION['plugin_flyvemdm_wizard_step'],
+            'appleEnterpriseDeveloperUrl' => PLUGIN_FLYVEMDM_APPLE_DEVELOPER_ENTERPRISE_URL,
          ];
          $twig = plugin_flyvemdm_getTemplateEngine();
          echo $twig->render('config-wizard.html', $data);
@@ -386,6 +468,11 @@ class PluginFlyvemdmConfig extends CommonDBTM {
          }
       }
 
+      // Build a CSR for Apple MDM
+      if (isset($input['applemdm_privkey_password'])) {
+         $input = static::appleMdmCreateCsr($input);
+      }
+
       if (isset($_SESSION['plugin_flyvemdm_wizard_step'])) {
          $input = static::processStep($input);
          if (count($input) > 0 && $input !== false) {
@@ -411,8 +498,111 @@ class PluginFlyvemdmConfig extends CommonDBTM {
          case static::WIZARD_FINISH:
             Config::setConfigurationValues('flyvemdm', ['show_wizard' => '0']);
             break;
+
+         case static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN + 1:
+            $input['is_vendor_cert'] = 1;
+            $input = static::appleMdmCreateCsr($input);
+            break;
+         case static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN + 1:
+            $input['is_customer_cert'] = 1;
+            $input = static::appleMdmCreateCsr($input);
+            break;
+         case static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN + 1:
+            $input = static::appleMdmSignCustomerCsr($input);
       }
       return $input;
+   }
+
+   /**
+    * Generates a private key and a CSR using the date from the Apple MDM form
+    * @param array $input
+    * @return array|false false if creation failed
+    */
+   protected static function appleMdmCreateCsr($input) {
+      $subDir = null;
+      if (isset($input['is_vendor_cert'])) {
+         $subDir = 'vendor';
+      }
+      if (isset($input['is_customer_cert'])) {
+         $subDir = 'customer';
+      }
+      if ($subDir === null) {
+         Session::addMessageAfterRedirect(__('Internal wizard error', 'flyvemdm'), false, ERROR);
+         return false;
+      }
+
+      $destinationDir = FLYVEMDM_CONFIG_PATH . "/applemdm/$subDir";
+       // Create folder for keys
+       $applemdmCrtDir = FLYVEMDM_CONFIG_PATH . "/applemdm/$subDir";
+       if (!is_dir($applemdmCrtDir) && !is_readable($applemdmCrtDir)) {
+          if (! @mkdir($applemdmCrtDir, 0770, true)) {
+             Toolbox::logInFile('php-errors', "Could not create directory $applemdmCrtDir");
+             return false;
+          }
+       }
+      $prefix = $subDir;
+      $options = [
+         'country_code' => $input['applemdm_country_code'],
+         'common_name'  => $input['applemdm_common_name'],
+         'email'        => $input['applemdm_email'],
+         'passphrase'   => $input['applemdm_privkey_passphrase'],
+      ];
+      $certTool = new PluginFlyvemdmApplemdmCertTool();
+      if (!$certTool->generateCsr($destinationDir, $prefix, $options)) {
+         return false;
+      }
+      return $input;
+   }
+
+   /**
+    * Signs a customer certificate with the vendor private key
+    * @param array $input
+    * @param array $input
+    */
+   protected static function appleMdmSignCustomerCsr($input) {
+      if (strlen($input['vendor_privkey_passphrase']) < 1) {
+         Session::addMessageAfterRedirect(__('You must provide the passphrase of the vendor private key', 'flyvemdm'), false, ERROR);
+         return false;
+      }
+
+      $vendorDir = FLYVEMDM_CONFIG_PATH . "/applemdm/vendor";
+      $customerDir = FLYVEMDM_CONFIG_PATH . "/applemdm/customer";
+      $certTool = new PluginFlyvemdmApplemdmCertTool();
+      if (!$certTool->generatePlist($vendorDir, $customerDir, $input['vendor_privkey_passphrase'])) {
+          return false;
+      }
+
+      return $input;
+   }
+
+   /**
+    * Do the vendor certificate exists in the filesystem ?
+    * @return boolean true if the certificate exists, false otherwise
+    */
+   protected static function vendorCertExists() {
+      $directory = FLYVEMDM_CONFIG_PATH . "/applemdm/vendor";
+      if (!file_exists("$directory/vendor_privkey.pem")) {
+         return false;
+      }
+
+      if (!file_exists("$directory/cert.crt")) {
+         return false;
+      }
+
+      return true;
+   }
+
+   /**
+    * Do the customer certificate reqiest exists in the filesystem ?
+    * @return boolean true if the CSR exists, false otherwise
+    */
+   protected static function customerCsrExists() {
+      $directory = FLYVEMDM_CONFIG_PATH . "/applemdm/customer";
+      if (!file_exists("file://$directory/customer_request.csr")) {
+         return false;
+      }
+
+      return true;
    }
 
    /**
@@ -427,6 +617,90 @@ class PluginFlyvemdmConfig extends CommonDBTM {
             break;
 
          case static::WIZARD_MQTT_END:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_BEGIN;
+            break;
+
+         case static::WIZARD_APPLEMDM_BEGIN:
+            // Choosing how to obtain the MDM certificate
+            switch ($input['apple_certificate']) {
+               case 'create enterprise account':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_ADEA_BEGIN;
+                  break;
+
+               case 'use enterprise account':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN;
+                  break;
+
+               case 'create customer certificate':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN;
+                  break;
+
+               case 'use customer certificate':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_USE_CUSTOMER_CRT_BEGIN;
+                  break;
+
+               case 'sign customer certificate':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN;
+                  break;
+
+               case 'skip apple mdm':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_FINISH;
+                  break;
+            }
+            break;
+
+         case static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN:
+            switch ($input['customer_siging']) {
+               case 'sign csr':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN + 1;
+                  break;
+
+               case 'manually sign csr':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN + 3;
+                  break;
+            }
+            break;
+
+         case static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN:
+            switch ($input['generate_csr']) {
+               case 'generate csr':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN + 1;
+                  break;
+
+               case 'manually generate csr':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN + 3;
+                  break;
+            }
+            break;
+
+         case static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN + 2:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_BEGIN;
+            break;
+
+         case static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN:
+            switch ($input['generate_csr']) {
+               case 'generate csr':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN + 1;
+                  break;
+
+               case 'manually generate csr':
+                  $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN + 3;
+                  break;
+            }
+            break;
+
+         case static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN + 2:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_BEGIN;
+            break;
+
+         case static::WIZARD_APPLEMDM_CREATE_ADEA_END:
+         case static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_END:
+         case static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_END:
+         case static::WIZARD_APPLEMDM_USE_CUSTOMER_CRT_END:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_BEGIN;
+            break;
+
+         case static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN + 2:
             $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_FINISH;
             break;
 
@@ -444,8 +718,32 @@ class PluginFlyvemdmConfig extends CommonDBTM {
             $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_WELCOME_END;
             break;
 
-         case static::WIZARD_FINISH:
+         case static::WIZARD_APPLEMDM_BEGIN:
             $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_MQTT_END;
+            break;
+
+         case static::WIZARD_APPLEMDM_CREATE_ADEA_BEGIN:
+         case static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN:
+         case static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN:
+         case static::WIZARD_APPLEMDM_USE_CUSTOMER_CRT_BEGIN:
+         case static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_BEGIN;
+            break;
+
+         case static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN + 3:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_VENDOR_CSR_BEGIN;
+            break;
+
+         case static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN + 3:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_CREATE_CUSTOMER_CRT_BEGIN;
+            break;
+
+         case static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN + 3:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_SIGN_CUSTOMER_CSR_BEGIN;
+            break;
+
+         case static::WIZARD_FINISH:
+            $_SESSION['plugin_flyvemdm_wizard_step'] = static::WIZARD_APPLEMDM_BEGIN;
             break;
 
          default:
