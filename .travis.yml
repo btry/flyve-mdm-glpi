@@ -33,6 +33,9 @@ script:
   - vendor/bin/atoum -ft -bf tests/bootstrap.php -d tests/suite-uninstall --ncc
   - if [[ ${TRAVIS_PHP_VERSION:0:3} == "$CS" ]] ; then vendor/bin/phpcs -p --standard=vendor/glpi-project/coding-standard/GlpiStandard/ *.php install/ inc/ front/ ajax/ tests/; fi
 
+after_success:
+  # let's update the documentation
+  - if [[ "$CS" == "true" ]]; then .github/push_ghpages.sh; fi
 
 cache:
   directories:
