@@ -109,9 +109,9 @@ class PluginFlyvemdmAgent extends CommonTestCase {
    }
 
    /**
-    * @tags testEnrollAgent
+    * @tags testEnrolAgent
     */
-   public function testEnrollAgent() {
+   public function testEnrolAgent() {
       global $DB;
 
       // Set a computer type
@@ -187,17 +187,6 @@ class PluginFlyvemdmAgent extends CommonTestCase {
       $rows = $invitationLog->find("`plugin_flyvemdm_invitations_id` = '$inviationId'");
       $this->integer(count($rows))->isEqualTo($expectedLogCount);
 
-      // test enrollment without serial or uuid
-      $_SESSION['MESSAGE_AFTER_REDIRECT'] = [];
-      $agent = $this->agentFromInvitation($user, $guestEmail, null, $invitationToken);
-      $this->boolean($agent->isNewItem())->isTrue();
-      $this->array($_SESSION['MESSAGE_AFTER_REDIRECT'][ERROR])->contains('One of serial and uuid is mandatory');
-
-      $invitationLog = new \PluginFlyvemdmInvitationlog();
-      $expectedLogCount++;
-      $rows = $invitationLog->find("`plugin_flyvemdm_invitations_id` = '$inviationId'");
-      $this->integer(count($rows))->isEqualTo($expectedLogCount);
-
       // Test enrollment without inventory
       $_SESSION['MESSAGE_AFTER_REDIRECT'] = [];
       $agent = $this->agentFromInvitation($user, $guestEmail, $serial, $invitationToken, 'android',
@@ -230,7 +219,7 @@ class PluginFlyvemdmAgent extends CommonTestCase {
       $rows = $invitationLog->find("`$fk` = '$inviationId'");
       $this->integer(count($rows))->isEqualTo($expectedLogCount);
 
-      // Test the agent has been enrolled
+      // Test the agent has been enroled
       $this->string($agent->getField('enroll_status'))->isEqualTo('enrolled');
 
       // Test the invitation status is updated
