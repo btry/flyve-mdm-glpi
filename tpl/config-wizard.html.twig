@@ -37,7 +37,7 @@
 			<td>
 				<p>{{ __('Flyve MDM requires cron job to run automatic actions.', 'flyvemdm') }}</p>
 				<p>{{ __('As root in a terminal, execute the following command. Adapt www-data to the user running your HTTP server.', 'flyvemdm') }}</p>
-				<p>{{ __('crontab -e -u www-data', 'flyvemdm') }}</p>
+				<p>crontab -e -u www-data</p>
 				<p>{{ __('Add, if missing, the following line. Adapt path to php CLI binary and path to GLPI:', 'flyvemdm') }}</p>
 				<p>*/1 * * * * /usr/bin/php /var/www/html/glpi/front/cron.php &amp;>/dev/null</p>
 				<p>{{ __('Automatic actions registered in the scheduler of GLPI will run every minute.', 'flyvemdm') }}</p>
@@ -112,11 +112,11 @@
 ; is disabled through enable_post_data_reading.
 ; http://php.net/post-max-size
 post_max_size = 8M
-					
+
 ; Whether to allow HTTP file uploads.
 ; http://php.net/file-uploads
 file_uploads = On
-					
+
 ; Maximum allowed size for uploaded files.
 ; http://php.net/upload-max-filesize
 upload_max_filesize = 8M
@@ -200,7 +200,7 @@ auth_opt_cacheseconds 300</textarea></p>
 				<p>{{ __('TLS provides security to the communication, through authentication of server and client, besides data encryption.', 'flyvemdm') }}</p>
 				<p>{{ __('Use TLS version 1.2, lower versions are no longer considered safe.', 'flyvemdm') }}</p>
 				<p>{{ __('Mosquitto does not support SSLv2 or SSLv3 (and they are no longer safe).', 'flyvemdm') }}</p>
-				<p>{{ __('- Copy in /etc/mosquitto/certs your certificate, your certificate authority chain and private key.', 'flyvemdm') }}</p>
+				<p>{{ __('- Copy in /etc/mosquitto/certs your certificate, your certificate chain and private key.', 'flyvemdm') }}</p>
 				<p>{{ __('- Secure your private key', 'flyvemdm') }}</p>
 				<p>chmod 600 /etc/mosquitto/certs/private-key.key</p>
 				<p>chown mosquitto:root /etc/mosquitto/certs/private-key.key</p>
@@ -213,7 +213,7 @@ auth_opt_cacheseconds 300</textarea></p>
 				<p>{{ __('The client operating system must contain more certificates to establish a trust chain to the root certificate.') }}</p></blockquote>
 				<p>{{ __('Append the following to /etc/mosquitto/conf.d/flyvemdm.conf.', 'flyvemdm') }}</p>
 				<p><textarea disabled="" rows="12" cols="120">listener 8883
-	
+
 cafile /etc/mosquitto/certs/cachain.pem
 certfile /etc/mosquitto/certs/cachain.pem
 keyfile /etc/mosquitto/certs/private-key.key
