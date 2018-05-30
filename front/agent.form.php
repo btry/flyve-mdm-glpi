@@ -41,7 +41,7 @@ if (!isset($_GET['id'])) {
    $_GET['id'] = '';
 }
 
-if (!isset($_GET["withtemplate"])) {
+if (!isset($_GET['withtemplate'])) {
    $_GET['withtemplate'] = '';
 }
 

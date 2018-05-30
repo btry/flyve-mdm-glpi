@@ -69,6 +69,9 @@ class PluginFlyvemdmAgent extends CommonDBTM implements PluginFlyvemdmNotifiable
     */
    protected $usenotepadRights         = true;
 
+   /**
+    * @var string
+    */
    protected $topic = null;
 
    /**
@@ -241,15 +244,15 @@ class PluginFlyvemdmAgent extends CommonDBTM implements PluginFlyvemdmNotifiable
          $fields['last_contact'] = __('Never seen online', 'flyvemdm');
       }
       $data = [
-            'withTemplate'    => (isset($options['withtemplate']) && $options['withtemplate'] ? '*' : ''),
-            'isNewID'         => $this->isNewID($ID),
-            'canUpdate'       => $canUpdate,
-            'agent'           => $fields,
-            'pingButton'      => Html::submit(_x('button', 'Ping'), ['name' => 'ping']),
-            'geolocateButton' => Html::submit(_x('button', 'Geolocate'), ['name' => 'geolocate']),
-            'inventoryButton' => Html::submit(_x('button', 'Inventory'), ['name' => 'inventory']),
-
+         'withTemplate'    => (isset($options['withtemplate']) && $options['withtemplate'] ? '*' : ''),
+         'isNewID'         => $this->isNewID($ID),
+         'canUpdate'       => $canUpdate,
+         'agent'           => $fields,
+         'pingButton'      => Html::submit(_x('button', 'Ping'), ['name' => 'ping']),
+         'geolocateButton' => Html::submit(_x('button', 'Geolocate'), ['name' => 'geolocate']),
+         'inventoryButton' => Html::submit(_x('button', 'Inventory'), ['name' => 'inventory']),
       ];
+
       $twig = plugin_flyvemdm_getTemplateEngine();
       echo $twig->render('agent.html.twig', $data);
 
