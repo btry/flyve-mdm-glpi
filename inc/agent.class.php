@@ -1402,7 +1402,7 @@ class PluginFlyvemdmAgent extends CommonDBTM implements PluginFlyvemdmNotifiable
       if ($agentAccount->isNewItem()) {
          $event = __('Cannot create a user account for the agent', 'flyvemdm');
          $this->filterMessages($event);
-         $this->logInvitationEvent($invitation, $event);
+         $this->logInvitationEvent($this->invitation, $event);
          return false;
       }
 
